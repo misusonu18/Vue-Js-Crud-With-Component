@@ -5,7 +5,7 @@ Vue.component("product-create",{
             productName: "",
             productPrice: "",
             productImage: "",   
-            productItems: [],
+            Items: [],
             editProduct: false,
             addProduct: true,
         }
@@ -16,7 +16,9 @@ Vue.component("product-create",{
             if (this.productName && this.productPrice) {
                 incrementValue = incrementValue + 1;
                 this.errors = [];
-                this.productItems.push({id: incrementValue,name: this.productName,price: this.productPrice,image: this.productImage});
+                this.Items.push({id: incrementValue,name: this.productName,price: this.productPrice,image: this.productImage});
+                this.$emit("productitem",this.Items);
+                this.Items = [];
                 this.productPrice = "";
                 this.productName = "";
                 this.productImage = "";
@@ -42,9 +44,12 @@ Vue.component("product-create",{
 
 Vue.component("product-retrive", {
     props: {
-        productItems: {
+        productitems: {
             type: Array,
             Required: true
+        },
+        cartitems: {
+            type: Array
         }
     },
     template: '#productRetriveTemplate',
@@ -57,7 +62,7 @@ Vue.component("product-retrive", {
             editProductImage: "",
             cartCheckVariable: "",
             cartCheckQuantity: "",
-            cartItems: [],
+            // cartItems: [],
             finalSubTotal: "",
         }
     },
@@ -66,20 +71,20 @@ Vue.component("product-retrive", {
     },
     methods: {
         deleteProduct: function(index){
-            this.productItems.splice(index,1);
+            this.productitems.splice(index,1);
         },
 
         updateProduct(index) {
             this.arrayIndex = index;
-            this.id = this.productItems[index]['id'];
-            this.editProductName = this.productItems[index]['name'];
-            this.editProductPrice = this.productItems[index]['price'];
-            this.editProductImage = this.productItems[index]['image'];
+            this.id = this.productitems[index]['id'];
+            this.editProductName = this.productitems[index]['name'];
+            this.editProductPrice = this.productitems[index]['price'];
+            this.editProductImage = this.productitems[index]['image'];
             this.editProduct = true;
         },
 
         productButtonEdit: function(){
-            Vue.set(this.productItems, this.arrayIndex, {id:this.id, name:this.editProductName, price:this.editProductPrice, image:this.editProductImage});
+            Vue.set(this.productitems, this.arrayIndex, {id:this.id, name:this.editProductName, price:this.editProductPrice, image:this.editProductImage});
             this.editProductName = "";
             this.editProductPrice = "";
             this.editproductImage = "";
@@ -87,28 +92,28 @@ Vue.component("product-retrive", {
         },
 
         addToCart: function(index) {
-            let cartProductName = this.productItems[index]['name'];
-            let cartProductPrice = this.productItems[index]['price'];
-            let cartProductImage = this.productItems[index]['image'];
+            let cartProductName = this.productitems[index]['name'];
+            let cartProductPrice = this.productitems[index]['price'];
+            let cartProductImage = this.productitems[index]['image'];
             let cartProductQuantity = 1;
 
-            this.cartItems.filter(obj => {
+            this.cartitems.filter(obj => {
                 if (obj.name === cartProductName) {
                     this.cartCheckVariable = obj.name;
                 }
             });
 
             if (this.cartCheckVariable) {
-                for (i=0; i < this.cartItems.length; i++) {
-                  if (this.cartItems[i].name == this.cartCheckVariable) {
-                      var tempCartProductQuantity = this.cartItems[i].quantity + 1;
-                      Vue.set(this.cartItems, i, {name:cartProductName, price:cartProductPrice, image:cartProductImage, quantity:tempCartProductQuantity});
+                for (i=0; i < this.cartitems.length; i++) {
+                  if (this.cartitems[i].name == this.cartCheckVariable) {
+                      var tempCartProductQuantity = this.cartitems[i].quantity + 1;
+                      Vue.set(this.cartitems, i, {name:cartProductName, price:cartProductPrice, image:cartProductImage, quantity:tempCartProductQuantity});
                   }
                 }
                 this.cartCheckVariable = "";
             }
             else {
-                this.cartItems.push(
+                this.cartitems.push(
                     {
                         name:cartProductName,
                         price:cartProductPrice,
@@ -120,10 +125,10 @@ Vue.component("product-retrive", {
             this.totalAmountDisplay();
         },
         totalAmountDisplay: function() {
-            if (this.cartItems.length) {
+            if (this.cartitems.length) {
                 this.finalSubTotal = 0;
-                for (let i = 0; i < this.cartItems.length; i++) {
-                    this.finalSubTotal += this.cartItems[i].quantity * this.cartItems[i].price;
+                for (let i = 0; i < this.cartitems.length; i++) {
+                    this.finalSubTotal += this.cartitems[i].quantity * this.cartitems[i].price;
                 }
             }   
             
@@ -131,9 +136,9 @@ Vue.component("product-retrive", {
     }
 });
 
-Vue.component("cart-Component", {
+Vue.component("cart-component", {
     props: {
-        cartItems: {
+        cartitems: {
             type: Array,
             required: true,
         },
@@ -154,7 +159,7 @@ Vue.component("cart-Component", {
     computed: {
         subTotal() {
             let subTotal = 0;
-            this.cartItems.forEach(item => {
+            this.cartitems.forEach(item => {
                 subTotal += (item.price * item.quantity);
             });
 
@@ -192,7 +197,7 @@ Vue.component("cart-Component", {
             let subTotal = 0;
             let tax = 0;
 
-            this.cartItems.forEach(item => {
+            this.cartitems.forEach(item => {
                 subTotal += (item.price * item.quantity);
             });
 
@@ -206,9 +211,8 @@ Vue.component("cart-Component", {
 
             return '$' + tax.toFixed(2);
         },
-        payable() {
+        payable: function() {
             let payable = this.finalTotal;
-
             return '$' + payable.toFixed(2);
         }
     },
@@ -230,47 +234,47 @@ Vue.component("cart-Component", {
             }
         },
         addProductCartQuantity: function(index) {
-            let cartProductName = this.cartItems[index]['name'];
-            let cartProductPrice = this.cartItems[index]['price'];
-            let cartProductImage = this.cartItems[index]['image'];
-            let cartProductQuantity = this.cartItems[index]['quantity'] + 1;
+            let cartProductName = this.cartitems[index]['name'];
+            let cartProductPrice = this.cartitems[index]['price'];
+            let cartProductImage = this.cartitems[index]['image'];
+            let cartProductQuantity = this.cartitems[index]['quantity'] + 1;
 
-            Vue.set(this.cartItems, index, {name:cartProductName, price:cartProductPrice, image:cartProductImage, quantity:cartProductQuantity});
+            Vue.set(this.cartitems, index, {name:cartProductName, price:cartProductPrice, image:cartProductImage, quantity:cartProductQuantity});
             // this.totalAmountDisplay();
             this.checkSubtotal();
         },
 
         subtractProductCartQuantity: function(index) {
-            let cartProductName = this.cartItems[index]['name'];
-            let cartProductPrice = this.cartItems[index]['price'];
-            let cartProductImage = this.cartItems[index]['image'];
-            let cartProductQuantity = this.cartItems[index]['quantity'] - 1;
+            let cartProductName = this.cartitems[index]['name'];
+            let cartProductPrice = this.cartitems[index]['price'];
+            let cartProductImage = this.cartitems[index]['image'];
+            let cartProductQuantity = this.cartitems[index]['quantity'] - 1;
 
-            this.cartItems.filter(obj => {
+            this.cartitems.filter(obj => {
                 if (obj.name === cartProductName) {
                     this.cartCheckQuantity = obj.quantity;
                 }
             });
             if (this.cartCheckQuantity <= 1) {
-                this.cartItems.splice(index,1);
+                this.cartitems.splice(index,1);
             }
             else {
-                Vue.set(this.cartItems, index, {name:cartProductName, price:cartProductPrice, image:cartProductImage, quantity:cartProductQuantity});
+                Vue.set(this.cartitems, index, {name:cartProductName, price:cartProductPrice, image:cartProductImage, quantity:cartProductQuantity});
             }
             this.totalAmountDisplay();
         },
 
         deleteProductCart: function(index) {
-            this.cartItems.splice(index,1);
+            this.cartitems.splice(index,1);
             this.totalAmountDisplay();
         },
         totalAmountDisplay: function() {
             console.log(this.subTotal);
             
-            if (this.cartItems.length) {
+            if (this.cartitems.length) {
                 this.subTotal = 0;
-                for (let i = 0; i < this.cartItems.length; i++) {
-                    this.subTotal += this.cartItems[i].quantity * this.cartItems[i].price;
+                for (let i = 0; i < this.cartitems.length; i++) {
+                    this.subTotal += this.cartitems[i].quantity * this.cartitems[i].price;
                 }
                 this.shippingCharge = this.subTotal < 1000 ? 100 : 0;
                 this.total = parseInt(this.shippingCharge) + parseInt(this.subTotal);
@@ -283,5 +287,18 @@ Vue.component("cart-Component", {
 });
 
 let app = new Vue({ 
-    el: '#app'
+    el: '#app',
+    data: {
+        productItems: [],
+        cartItems: [],
+    },
+    methods: {
+        updateProduct:function(e) {
+            let id = e[0]['id'];
+            let name = e[0]['name'];
+            let price = e[0]['price'];
+            let image = e[0]['image'];
+            this.productItems.push({id:id,name:name,price:price,image:image});
+        }
+    },
 });
