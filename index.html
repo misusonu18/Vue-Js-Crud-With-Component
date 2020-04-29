@@ -11,13 +11,23 @@
 <body>
     <div id="app">
         <div class="container-fluid">
-            <product-create></product-create>
+            <div class="row">
+                <div class="col-4">
+                    <product-create v-on:productitem="updateProduct($event)"></product-create>
+                </div>
+                <div class="col-4">
+                    <product-retrive :productitems="productItems" :cartitems="cartItems"></product-retrive>
+                </div>
+                <div class="col-4">
+                    <cart-component :cartitems="cartItems"></cart-component>
+                </div>
+            </div>
         </div>
     </div>
 
     <script type="text/x-template" id="productCreateTemplate">
-        <div class="row">
-            <div class="col-3">
+        <!-- <div class="row"> -->
+            <div>
                 <div class="form-group">
                     <p class="h2">Add Product</p>
                     <hr class="bg-success">
@@ -55,87 +65,88 @@
                     </button>
                 </div>
             </div>    
-            <product-retrive :productItems="productItems"></product-retrive>
-        </div>
+            <!-- <div class="col"> -->
+                <!-- <product-retrive :productItems="productItems"></product-retrive> -->
+            <!-- </div> -->
+        <!-- </div> -->
     </script>
 
     <script type="text/x-template" id="productRetriveTemplate">
-        <div class="row">
-            <div class="col-">
-                <div class="table-responsive">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Id</th>
-                                <th>Name</th>
-                                <th>Price</th>
-                                <th>Image Path</th>
-                                <th>action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="product,index in productItems">
-                                <td> {{ product.id }} </td>
-                                <td> {{ product.name }} </td>
-                                <td> ${{ product.price }} </td>
-                                <td> <img v-bind:src="product.image" alt="demo" style="width:100px;"> </td>
-                                <td>
-                                    <button class="btn btn-warning" @click="updateProduct(index)"><i class="fa fa-edit"></i></button>
-                                    <button class="btn btn-danger" @click="deleteProduct(index)"><i class="fa fa-trash"></i></button>
-                                    <button class="btn btn-success" @click="addToCart(index)"><i class="fa fa-cart-arrow-down"></i></button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+        <div>
+            <div class="table-responsive">
+                <p class="h2">Product Display</p>
+                <hr class="bg-success">
+                <table class="table">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Id</th>
+                            <th>Name</th>
+                            <th>Price</th>
+                            <th>Image Path</th>
+                            <th>action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="product,index in productitems">
+                            <td> {{ product.id }} </td>
+                            <td> {{ product.name }} </td>
+                            <td> ${{ product.price }} </td>
+                            <td> <img v-bind:src="product.image" alt="demo" style="width:100px;"> </td>
+                            <td>
+                                <button class="btn btn-warning" @click="updateProduct(index)"><i class="fa fa-edit"></i></button>
+                                <button class="btn btn-danger" @click="deleteProduct(index)"><i class="fa fa-trash"></i></button>
+                                <button class="btn btn-success" @click="addToCart(index)"><i class="fa fa-cart-arrow-down"></i></button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div v-if="editProduct">
+                <div class="form-group">
+                    <p class="h2">Update Product</p>
+                    <hr class="bg-success">
+                    <div class="input-group">
+                        <input type="text" 
+                            v-model="editProductName" 
+                            placeholder="Product Name" 
+                            class="form-control" 
+                        >
+                    </div>
                 </div>
-                <div v-if="editProduct">
-                    <div class="form-group">
-                        <p class="h2">Update Product</p>
-                        <hr class="bg-success">
-                        <div class="input-group">
-                            <input type="text" 
-                                v-model="editProductName" 
-                                placeholder="Product Name" 
-                                class="form-control" 
-                            >
-                        </div>
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <input type="number" 
+                            v-model="editProductPrice" 
+                            placeholder="Product Price" 
+                            class="form-control" 
+                        > 
                     </div>
-    
-                    <div class="form-group">
-                        <div class="input-group">
-                            <input type="number" 
-                                v-model="editProductPrice" 
-                                placeholder="Product Price" 
-                                class="form-control" 
-                            > 
-                        </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <input type="text" 
+                            v-model="editProductImage" 
+                            class="form-control" 
+                            placeholder="Product Image"
+                        >
                     </div>
-    
-                    <div class="form-group">
-                        <div class="input-group">
-                            <input type="text" 
-                                v-model="editProductImage" 
-                                class="form-control" 
-                                placeholder="Product Image"
-                            >
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <button class="btn btn-warning" @click="productButtonEdit">
-                            <i class="fa fa-edit"></i>
-                        </button>
-                    </div>
+                </div>
+                <div class="form-group">
+                    <button class="btn btn-warning" @click="productButtonEdit">
+                        <i class="fa fa-edit"></i>
+                    </button>
                 </div>
             </div>
-            <cart-Component :cartItems="cartItems"></cart-Component>
         </div>
     </script>
 
     <script type="text/x-template" id="addToCartTemplate">
-        <div class="col-">
+        <div>
             <p class="h2">Add To Cart</p>
             <hr class="bg-success">
-            <div v-if="cartItems.length" v-for="cartItem,index in cartItems">
+            <div v-if="cartitems.length" v-for="cartItem,index in cartitems">
                 <p><img v-bind:src="cartItem.image" alt="demo" style="width:100px;"></p>
                 <div class="d-flex justify-content-between" >
                     <p>
@@ -168,22 +179,22 @@
                 </div>
 
                 <div class="justify-content-end">
-                    <p v-if="subTotal">
+                    <p>
                         {{ subTotal }}
                     </p>
-                    <p v-if="shippingCharge">
+                    <p>
                         {{ shippingCharge }}
                     </p>
                     <!-- <p v-if="discountAmount">
                         {{ DiscountAmount }}
                     </p> -->
-                    <p v-if="total">
+                    <p>
                         {{ total }}
                     </p>
-                    <p v-if="tax">
+                    <p>
                         {{ tax }}
                     </p>
-                    <p v-if="payable">
+                    <p>
                         {{ payable }}
                     </p>
                 </div>
